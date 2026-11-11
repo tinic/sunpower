@@ -98,3 +98,25 @@ python -B sunbridge.py -v --once      # one cycle, messages on stderr
 
 Reboot (or run `bash /home/sunpwrscripts/30-sunbridge.sh &`) to start it
 again.
+
+## Roof dashboard
+
+The Power Manager stores each panel's position from commissioning in
+`/var/sb/pm.conf`. `tools/ha-dashboard.py` turns that into a dashboard
+that draws your roof and shows each panel's live power and DC voltage on
+it, plus a total power gauge, grid voltage and frequency, and graphs.
+It uses only built-in cards (`picture-elements` with an SVG drawing).
+
+```sh
+ssh sunpower cat /var/sb/pm.conf > pm.conf
+tools/ha-dashboard.py pm.conf > dashboard.yaml
+```
+
+In Home Assistant: **Settings → Dashboards → Add dashboard → New dashboard
+from scratch**, open it, **⋮ → Edit dashboard → ⋮ → Raw configuration
+editor**, and replace the content with `dashboard.yaml`.
+
+The entity IDs come from the names the bridge announces
+(`sensor.sunpower_panel_<last 4 digits of serial>_power`,
+`..._dc_voltage`, `sensor.sunpower_power_manager_total_power`). If yours
+differ, pass `--entity-id` and `--total-id` patterns.
