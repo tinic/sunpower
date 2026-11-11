@@ -46,6 +46,9 @@ SENSORS = [
     ('status', 'Status', None, None, None),
 ]
 
+# Polls an inverter may miss before it counts as unreachable (0 W).
+MISSED_POLLS = 5
+
 # Largest believable energy increase per poll: 225 W max output, with margin.
 MAX_KWH_PER_HOUR = 0.5
 
@@ -291,7 +294,7 @@ class Bridge(object):
         self.asleep = not [1 for _, state, _ in results if state['reachable']]
         # A missed answer is not 0 W: keep the last answer for a while, so a
         # powerline hiccup does not drop the panel and the total to zero.
-        now, grace = time.time(), 2.5 * int(self.cfg['interval'])
+        now, grace = time.time(), (MISSED_POLLS + 0.5) * int(self.cfg['interval'])
         fresh = []
         for serial, state, energy in results:
             if state['reachable']:

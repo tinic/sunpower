@@ -72,7 +72,7 @@ energy sensors in Home Assistant's Energy dashboard as solar production.
 | Home Assistant restarts | discovery and states are retained, so they come back at once |
 | Bridge stops | publishes `offline`; on a crash the broker sends the last will, so all sensors become unavailable |
 | `sbti` hangs | killed after `sbti_timeout`; the half-written cache files it leaves in `/var/sb` are removed later |
-| An inverter misses a poll (powerline hiccup) | its last answer is kept, in its own state and in the total, for 2.5 poll intervals; after that it is unreachable |
+| An inverter misses a poll (powerline hiccup) | its last answer is kept, in its own state and in the total, for up to 5 missed polls; after that it is unreachable |
 | Night, or an inverter does not answer | power and currents 0, voltages/frequency/temperature unknown, `reachable` off; energy keeps its last value |
 | All inverters silent | only one inverter (rotating) is asked per cycle, instead of spending ~30 s of powerline time on each |
 | Lifetime energy decreases or jumps (the 2013 "lifetime energy spike" bug) | the value is rejected; the total is only published when every inverter is known |
