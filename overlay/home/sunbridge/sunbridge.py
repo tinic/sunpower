@@ -29,6 +29,7 @@ DEFAULTS = {
     'sbti_timeout': 60,     # seconds before a hung sbti call is killed
     'prefix': 'sunpower',
     'discovery_prefix': 'homeassistant',
+    'ignore': [],           # serials of dead inverters: not polled, not in totals
 }
 
 # (key, name, unit, device_class, state_class) for each inverter sensor.
@@ -271,18 +272,21 @@ class Bridge(object):
 
     def cycle(self):
         inverters = serials()
-        if self.asleep and inverters:
+        ignore = set(self.cfg['ignore'])
+        active = [s for s in inverters if s not in ignore]
+        results = [(s,) + self.state(s, {}, None) for s in inverters if s in ignore]
+        if self.asleep and active:
             # Nothing answered last time (night): ask one inverter, rotating,
             # instead of spending ~30 s of powerline time on each of them.
-            probe = inverters[self.probe % len(inverters)]
+            probe = active[self.probe % len(active)]
             self.probe += 1
-            results = [(probe,) + self.poll(probe)]
-            if results[0][1]['reachable']:
-                results += [(s,) + self.poll(s) for s in inverters if s != probe]
+            results += [(probe,) + self.poll(probe)]
+            if results[-1][1]['reachable']:
+                results += [(s,) + self.poll(s) for s in active if s != probe]
             else:
-                results += [(s,) + self.state(s, {}, None) for s in inverters if s != probe]
+                results += [(s,) + self.state(s, {}, None) for s in active if s != probe]
         else:
-            results = [(s,) + self.poll(s) for s in inverters]
+            results += [(s,) + self.poll(s) for s in active]
         self.asleep = not [1 for _, state, _ in results if state['reachable']]
         if not self.ensure_connected(inverters):
             return  # nothing is buffered; the next cycle sends fresh data
@@ -294,7 +298,7 @@ class Bridge(object):
                     self.publish(p + '/' + serial + '/energy', {'energy': energy})
             self.publish(p + '/total/power', {'power': sum(s['power'] for _, s, _ in results)})
             # Only when every inverter is known, or the total would drop.
-            if inverters and len(self.energy) == len(inverters):
+            if active and len(self.energy) == len(active):
                 self.publish(p + '/total/energy', {'energy': round(sum(self.energy.values()), 3)})
         except socket.error, e:
             log('publish failed: %s' % e)

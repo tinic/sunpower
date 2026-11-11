@@ -6,5 +6,6 @@
     "interval": 300,
     "sbti_timeout": 60,
     "prefix": "sunpower",
-    "discovery_prefix": "homeassistant"
+    "discovery_prefix": "homeassistant",
+    "ignore": []
 }

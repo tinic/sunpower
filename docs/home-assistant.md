@@ -33,6 +33,7 @@ and sensors appear on their own.
 | `sbti_timeout` | 60 | seconds before a hung `sbti` call is killed |
 | `prefix` | `sunpower` | MQTT topic prefix |
 | `discovery_prefix` | `homeassistant` | |
+| `ignore` | `[]` | serials of dead inverters: not polled (saves ~30 s each per cycle), shown as unreachable, left out of the totals |
 
 ## What you get
 
