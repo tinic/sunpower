@@ -127,36 +127,38 @@ def number(text):
     return m and float(m.group(0))
 
 
-# Maps sbti -m output labels (lowercased, punctuation removed) to sensor keys.
-# TODO: confirm against real output in daylight.
+# The labels `sbti -m` prints ("<label> = <value>", from the sbti binary),
+# mapped to (sensor key, scale). Lifetime energy comes in Wh.
 LABELS = {
-    'power': 'power', 'ac power': 'power', 'output power': 'power',
-    'lte': 'energy', 'lifetime energy': 'energy',
-    'dc watts': 'dc_watts', 'dc power': 'dc_watts',
-    'dc volts': 'dc_volts', 'dc voltage': 'dc_volts',
-    'dc amps': 'dc_amps', 'dc current': 'dc_amps',
-    'ac volts': 'ac_volts', 'ac voltage': 'ac_volts',
-    'ac amps': 'ac_amps', 'ac current': 'ac_amps',
-    'frequency': 'frequency', 'temperature': 'temperature',
-    'panel status': 'status', 'status': 'status',
+    'Total Lifetime Energy in Watt hours': ('energy', 1e-3),
+    'Present AC Power Generating in Watts': ('power', 1),
+    'Average DC voltage over report period in Volts': ('dc_volts', 1),
+    'DC Current in Amps': ('dc_amps', 1),
+    'DC Power in Watts': ('dc_watts', 1),
+    'AC Voltage line 1 to line 2': ('ac_volts', 1),
+    'Line Frequency in Hertz': ('frequency', 1),
+    'Temperature in celsius': ('temperature', 1),
 }
 
 
 def parse(output):
-    """Turn `sbti -m` output ("label: value" lines) into a sensor dict."""
-    values = {}
+    """Turn `sbti -m` output into a sensor dict. Alert lines become the
+    status; without any it is "ok"."""
+    values, alerts = {}, []
     for line in output.splitlines():
-        m = re.match(r'\s*([A-Za-z][A-Za-z _/-]*?)\s*[:=]\s*(.+?)\s*$', line)
-        if not m:
-            continue
-        label = re.sub(r'[^a-z ]', '', m.group(1).lower().replace('_', ' ')).strip()
-        key = LABELS.get(label)
-        if key == 'status':
-            values[key] = m.group(2)
-        elif key:
-            n = number(m.group(2))
+        label, sep, value = line.partition('=')
+        label = label.strip()
+        if sep and label in LABELS:
+            key, scale = LABELS[label]
+            n = number(value)
             if n is not None:
-                values[key] = n
+                values[key] = round(n * scale, 3)
+        elif line.strip().startswith('Alert '):
+            alerts.append(line.strip())
+    if 'power' in values:
+        if 'ac_volts' in values and values['ac_volts']:
+            values['ac_amps'] = round(values['power'] / values['ac_volts'], 3)
+        values['status'] = alerts and '; '.join(alerts)[:250] or 'ok'
     return values
 
 

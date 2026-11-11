@@ -80,9 +80,10 @@ coming up, broker restart, SIGTERM, `kill -9`, and night.
 
 ## Status
 
-**The parser for `sbti -m` output is not finished**: it needs a capture of
-real output in daylight. Until then the bridge reports every inverter as
-unreachable. See [inverters.md](inverters.md).
+The parser uses the labels from the `sbti` binary
+([inverters.md](inverters.md)); it has not yet seen real output, because
+our powerline link is down. Until an inverter answers, the bridge reports
+it as unreachable.
 
 ## Run it by hand
 

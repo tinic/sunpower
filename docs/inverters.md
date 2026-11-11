@@ -43,8 +43,30 @@ Notes:
 - Every call rewrites the inverter directory cache `/var/sb/.sbidirect.mil`
   and keeps a numbered copy (`.sbidirect_<unix time>.mil`, 7 KB; the
   library keeps 51). That is about 14 KB written to the card per call.
-- We have not yet captured a successful `sbti -m` output (it needs
-  daylight). If you have one, please open an issue with it.
+- We have not yet captured a successful `sbti -m` output: our powerline
+  link has been down since 2021 (see
+  [troubleshooting](troubleshooting.md#sbti--m-fails)). The labels below
+  are from the `sbti` binary; the bridge parses them. If you have real
+  output, please open an issue with it.
+
+`sbti -m` prints `<label> = <value>` lines with these labels:
+
+| Label | Bridge sensor |
+|---|---|
+| `Total Lifetime Energy in Watt hours` | energy (kWh) |
+| `Present AC Power Generating in Watts` | power |
+| `Average DC voltage over report period in Volts` | DC voltage |
+| `DC Current in Amps` | DC current |
+| `DC Power in Watts` | DC power |
+| `AC Voltage line 1 to line 2` | AC voltage |
+| `Line AC Voltage line 1 to neutral in Volts`, `... line 2 ...` | |
+| `Line Frequency in Hertz` | grid frequency |
+| `Temperature in celsius` | temperature |
+| `IC temperature in celsius` | |
+
+followed by `No alerts found` or `Alert ...` lines. The bridge calculates
+AC current from power and AC voltage. The vendor data logger used the same
+fields (ids 1 to 8 and 11 in `lua_scripts/solarbridge.lua`).
 
 **Trip settings (`-t`) are the grid protection limits your utility
 requires**, and **firmware updates (`-f`) take about 40 minutes per panel

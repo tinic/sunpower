@@ -94,9 +94,10 @@ Done on our own box (19 Pantheon microinverters, November 2026):
 
 Still open:
 
-- Parsing the live output of `sbti -m` (the inverters only answer in
-  daylight); until then the bridge publishes zeros. See
-  [docs/inverters.md](docs/inverters.md)
+- Our inverters have not answered on the powerline since 2021, the year
+  the house got a new breaker panel; the bridge publishes them as
+  unreachable until they do. See
+  [troubleshooting](docs/troubleshooting.md#sbti--m-fails)
 
 Contributions and reports from other owners are welcome, especially from
 other SPM models and other panel brands (the software supports AUO, BenQ,

@@ -43,6 +43,24 @@ If the internal flash is nearly full, JFFS2 garbage collection
 - `InvDir Error Code (1) Generic failure of transaction` in daylight: the
   inverter does not answer on the powerline. Check that it produces power
   and that `sbti -l` lists it.
+- **No inverter answers in daylight** (and `sbti -r` fails with
+  `InvDir Error Code (19) MI array state cache is out of sync`): the
+  powerline link is down, not the software. Check when it stopped: each
+  inverter in `/var/sb/.sbidirect.mil` and its numbered copies (JSON) has a
+  `seqNum` message counter. If the counters stopped changing, nothing has
+  got through since then. On our box they froze in 2021, the year the
+  house got a new breaker panel. Things that block or absorb the
+  powerline signal, or put the Supervisor on a different path from the
+  panels:
+  - AFCI or dual-function (AFCI/GFCI) breakers on the circuit that feeds
+    the Supervisor or on the solar circuit
+  - a whole-house surge protector or a filter in the new panel
+  - the Supervisor on a different leg, subpanel or circuit than the solar
+    breaker after the rewiring
+  - noisy loads near the Supervisor (chargers, UPS, LED drivers)
+
+  The panels keep producing power in all these cases; only monitoring
+  stops.
 
 ## Some inverters report but produce nothing
 
