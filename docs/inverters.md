@@ -40,6 +40,9 @@ Notes:
 - `sbti` needs `/usr/local/sbin/plctools/plcioctl_old` on the internal
   flash. Do not delete the `*_old` files there.
 - Calls are serialised with the lock `/var/lock/sbti.sync`.
+- Every call rewrites the inverter directory cache `/var/sb/.sbidirect.mil`
+  and keeps a numbered copy (`.sbidirect_<unix time>.mil`, 7 KB; the
+  library keeps 51). That is about 14 KB written to the card per call.
 - We have not yet captured a successful `sbti -m` output (it needs
   daylight). If you have one, please open an issue with it.
 

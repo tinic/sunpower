@@ -2,7 +2,7 @@
 
 Polls each inverter with the vendor tool `sbti -m <serial>` and publishes
 retained JSON states plus Home Assistant discovery configs. Runs forever and
-never writes to disk: all state is in memory, nothing is logged unless -v is
+never writes to disk itself: all state is in memory, nothing is logged unless -v is
 given (then to stderr).
 
     python -B sunbridge.py [-c sunbridge.conf] [-v] [--once]
@@ -97,9 +97,29 @@ def run(args, timeout):
             except OSError:
                 pass
             p.wait()
+            remove_stale_cache(2 * timeout)
             return -1, 'timeout'
         time.sleep(0.2)
     return p.returncode, p.stdout.read()
+
+
+def remove_stale_cache(min_age):
+    """A killed sbti leaves its half-written cache /var/sb/.sbidirect.mil-XXXXXX
+    behind (libsbidirect prunes only its numbered copies). Remove those that
+    are old enough not to belong to a running call."""
+    now = time.time()
+    try:
+        names = os.listdir('/var/sb')
+    except OSError:
+        return
+    for name in names:
+        if name.startswith('.sbidirect.mil-'):
+            path = os.path.join('/var/sb', name)
+            try:
+                if now - os.path.getmtime(path) > min_age:
+                    os.unlink(path)
+            except OSError:
+                pass
 
 
 def number(text):

@@ -40,8 +40,8 @@ monitoring and configuration.
   - [`tools/extract.py`](tools/extract.py): card image → file tree plus a
     manifest of owners, modes and links
   - [`tools/apply-overlay.py`](tools/apply-overlay.py): disables the dead
-    vendor cloud software, adds SSH access and the Home Assistant bridge,
-    removes unused files
+    vendor cloud software, stops the logging that wears out the card,
+    adds SSH access and the Home Assistant bridge, removes unused files
   - [`tools/make-card.py`](tools/make-card.py): file tree → flashable card
     image in the exact ext3 format the box's 2013 kernel needs
 - [Home Assistant MQTT bridge](docs/home-assistant.md): per-panel power,

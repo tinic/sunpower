@@ -7,6 +7,8 @@ Usage: apply-overlay.py <tree> [--ssh-key KEY.pub] [--mqtt-conf FILE] [--no-trim
   - disables the vendor cloud software (stubs; originals are moved to
     home/data_logger/vendor-disabled/ so they can be restored)
   - points the Power Manager's cloud servers in sb/pm.conf to 127.0.0.1
+  - sends the vendor's own logs to /dev/null and stops their archiving
+    (system logs go to RAM at boot via home/sunpwrscripts/00-logs-in-ram.sh)
   - installs our boot hooks (home/sunpwrscripts/) and the MQTT bridge
     (home/sunbridge/)
   - installs an SSH key for root logins if --ssh-key is given
@@ -108,6 +110,34 @@ def disable_vendor(tree):
             tree.touch('/sb/pm.conf')
 
 
+# Vendor logs that grow on the card; the scripts append to them with >>.
+NULL_LOGS = [DL + '/cron.log', DL + '/startup.log', '/home/sunpwrscripts.log']
+
+
+def quiet_logs(tree):
+    """Send vendor logs to /dev/null and stop the log archiving."""
+    for path in NULL_LOGS:
+        r = tree.rows.get(path)
+        if r and r[1] == 'l':
+            continue
+        local = tree.local(path)
+        if os.path.lexists(local):
+            os.unlink(local)
+        os.symlink('/dev/null', local)
+        tree.add(path, 'l', 0o777, extra='/dev/null')
+    rotate = DL + '/rotate.def'
+    if tree.has(rotate) and os.path.getsize(tree.local(rotate)):
+        saved = DISABLED + '/rotate.def'
+        if not tree.has(saved):
+            shutil.copy2(tree.local(rotate), tree.local(saved))
+            tree.rows[saved] = [saved] + tree.rows[rotate][1:]
+        open(tree.local(rotate), 'w').close()  # file_rotate then does nothing
+        tree.touch(rotate)
+    for p in [p for p in tree.rows if p.startswith(DL + '/logarchive/')]:
+        if tree.has(p):
+            tree.remove(p)
+
+
 def install_overlay(tree, ssh_key, mqtt_conf):
     for d, _, files in os.walk(OVERLAY):
         rel = '/' + os.path.relpath(d, OVERLAY).replace(os.sep, '/')
@@ -174,6 +204,7 @@ def main():
     if not tree.has(DL):
         sys.exit(f'{args.tree}: no {DL} in the manifest; is this a PV Supervisor card?')
     disable_vendor(tree)
+    quiet_logs(tree)
     install_overlay(tree, args.ssh_key, args.mqtt_conf)
     if not args.no_trim:
         trim(tree)

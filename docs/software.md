@@ -69,6 +69,21 @@ All jobs except `sbmenu.sh` append to `/home/data_logger/cron.log` on the
 card. Together with the log archiving at every boot, this is why cards
 fill up and wear out.
 
+## What writes to the card
+
+We listed every file on the card modified during 1.5 hours of normal
+running (`find /var -xdev -newer <boot time>`):
+
+| Writer | What | With our overlay |
+|---|---|---|
+| Vendor cron jobs, `rc.local` | `/home/data_logger/cron.log`, `startup.log`, `/home/sunpwrscripts.log` | symlinks to `/dev/null` |
+| `file_rotate` (boot and twice an hour) | new `logarchive/*.gz` files, up to 40 per log | its list `rotate.def` is emptied (original in `vendor-disabled/`) |
+| `syslogd`, `klogd`, Apache, `sshd` (`wtmp`) | `/var/log/*` | `/var/log` is a 16 MB tmpfs, mounted by `sunpwrscripts/00-logs-in-ram.sh`, which restarts those daemons. Early boot logs still go to the card underneath |
+| `libsbidirect` (every `sbti` call) | `/var/sb/.sbidirect.mil` and a numbered copy `.sbidirect_<time>.mil` (7 KB) | unchanged; the library keeps 51 numbered copies and deletes older ones. A killed `sbti` leaves `.sbidirect.mil-XXXXXX` behind; the bridge removes stale ones |
+| `rc.local` | `bootcount` (4 bytes per boot) | unchanged |
+| `rc.local` | runs `dpkg-reconfigure openssh-server` at **every boot**, rewriting 800 KB of debconf data, because it tests for `/etc/ssh/sshd_host_dsa_key` while the file is called `ssh_host_dsa_key` (vendor bug) | unchanged (fix needs an edit on the flash) |
+| `dhclient`, `logrotate`, `anacron`, `urandom` | lease file, state and time stamps | unchanged (small) |
+
 ## Two vendor application stacks
 
 The box runs two generations of vendor software side by side:

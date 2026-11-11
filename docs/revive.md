@@ -137,9 +137,9 @@ before you change anything on the flash.
 
 ## Keeping it alive
 
-- The vendor software writes logs to the card all the time
-  ([software.md](software.md#scheduled-jobs-etccrontab)). Expect the card
-  to last years, not decades. Keep your image and `mycard` directory so
-  you can make a new card in minutes.
+- The vendor software wrote logs to the card all the time. The overlay
+  sends those to `/dev/null` or RAM; what still writes is listed in
+  [software.md](software.md#what-writes-to-the-card). Keep your image and
+  `mycard` directory so you can make a new card in minutes.
 - Keep the box on your LAN only. It runs 2009-era software that can not be
   updated, and it does not need the internet any more.
