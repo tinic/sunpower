@@ -1,0 +1,5 @@
+*.img
+*.ext
+__pycache__/
+/mycard/
+mqtt.conf

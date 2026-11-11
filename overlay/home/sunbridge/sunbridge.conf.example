@@ -1,0 +1,10 @@
+{
+    "host": "homeassistant.local",
+    "port": 1883,
+    "user": "sunbridge",
+    "password": "change-me",
+    "interval": 300,
+    "sbti_timeout": 60,
+    "prefix": "sunpower",
+    "discovery_prefix": "homeassistant"
+}

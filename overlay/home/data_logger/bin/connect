@@ -1,0 +1,6 @@
+#!/bin/sh
+# Stub: opened a reverse SSH tunnel to remoteproxy.sunpowermonitor.com, which
+# would give whoever controls that name a shell on this box. Called from
+# /etc/crontab. The original is in /home/data_logger/vendor-disabled/connect.
+echo "connect: disabled (vendor remote access)" >&2
+exit 0

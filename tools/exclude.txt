@@ -1,0 +1,39 @@
+# Runtime state left out of the repo. Patterns are fnmatch globs on the path
+# inside the partition; '*' also matches '/'. Directories are always kept.
+#
+#   <pattern>           drop matching files
+#   truncate <pattern>  keep the file with owner/mode, but empty
+
+# fsck leftovers
+/lost+found/*
+
+# Volatile state, recreated at boot. utmp must exist; the klogd FIFO is kept.
+/run/motd
+truncate /run/utmp
+/tmp/*
+/lib/php5/sess_*
+/lib/dhcp3/dhclient.*.leases
+/lib/urandom/random-seed
+
+# System logs: drop rotated copies, keep the live files empty so their
+# owner/mode survive (wtmp, lastlog and friends are not recreated).
+/log/*.[0-9]
+/log/*.[0-9].gz
+/log/*.gz
+/log/fsck/*
+truncate /log/*
+
+# Swap file; make-card.py writes a fresh one (64 MB)
+/swaps/swapfile
+
+# SolarBridge logs and archived production data. Uploads to
+# sunpowermonitor.com stopped working, so these only grow until the card fills.
+truncate /home/data_logger/log/*
+truncate /home/data_logger/cron.log
+truncate /home/data_logger/startup.log
+/home/data_logger/logarchive/*
+/home/data_logger/arc_data/*
+/home/data_logger/arc_meta/*
+/home/data_logger/disc_log/*
+/sb/data/*
+truncate /sb/logs/*

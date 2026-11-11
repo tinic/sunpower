@@ -1,0 +1,6 @@
+#!/bin/sh
+# Stub: the SolarBridge data logger uploaded to sunpowermonitor.com, which no
+# longer exists, and took remote commands from it. The original binary is in
+# /home/data_logger/vendor-disabled/data_logger.
+echo "data_logger: disabled (vendor cloud is gone)" >&2
+exit 0
