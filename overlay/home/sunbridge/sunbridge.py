@@ -175,6 +175,7 @@ class Bridge(object):
         self.energy = {}        # serial -> last accepted lifetime kWh
         self.energy_time = {}
         self.asleep = True      # no inverter answered in the last cycle (start by probing)
+        self.last = {}          # serial -> (time, state) of its last answer
         self.probe = 0
 
     # -- MQTT ------------------------------------------------------------
@@ -288,15 +289,32 @@ class Bridge(object):
         else:
             results += [(s,) + self.poll(s) for s in active]
         self.asleep = not [1 for _, state, _ in results if state['reachable']]
+        # A missed answer is not 0 W: keep the last answer for a while, so a
+        # powerline hiccup does not drop the panel and the total to zero.
+        now, grace = time.time(), 2.5 * int(self.cfg['interval'])
+        fresh = []
+        for serial, state, energy in results:
+            if state['reachable']:
+                self.last[serial] = (now, state)
+            elif serial in self.last and now - self.last[serial][0] < grace:
+                fresh.append((serial, None, None))  # keep the retained state
+                continue
+            fresh.append((serial, state, energy))
+        results = fresh
         if not self.ensure_connected(inverters):
             return  # nothing is buffered; the next cycle sends fresh data
         p = self.cfg['prefix']
         try:
             for serial, state, energy in results:
+                if state is None:
+                    continue
                 self.publish(p + '/' + serial + '/state', state)
                 if energy is not None:
                     self.publish(p + '/' + serial + '/energy', {'energy': energy})
-            self.publish(p + '/total/power', {'power': sum(s['power'] for _, s, _ in results)})
+            total = 0
+            for serial, state, _ in results:
+                total += (state or self.last[serial][1])['power']
+            self.publish(p + '/total/power', {'power': round(total, 1)})
             # Only when every inverter is known, or the total would drop.
             if active and len(self.energy) == len(active):
                 self.publish(p + '/total/energy', {'energy': round(sum(self.energy.values()), 3)})
