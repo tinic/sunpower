@@ -90,13 +90,13 @@ Done on our own box (19 Pantheon microinverters, November 2026):
 - Root SSH access; internal flash backed up and cleaned up (it was 95%
   full)
 - Bridge tested on the box against a broker, including broker down,
-  broker restart and crash cases
+  broker restart and crash cases; live per-panel data in Home Assistant
 
 Still open:
 
-- Our inverters have not answered on the powerline since 2021, the year
-  the house got a new breaker panel; the bridge publishes them as
-  unreachable until they do. See
+- One inverter of 19 does not answer reliably yet. Ours had stopped
+  answering in 2021 after a new breaker panel; moving the Supervisor to an
+  outlet next to the solar breaker fixed it. See
   [troubleshooting](docs/troubleshooting.md#sbti--m-fails)
 
 Contributions and reports from other owners are welcome, especially from

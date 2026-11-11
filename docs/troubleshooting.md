@@ -60,7 +60,9 @@ If the internal flash is nearly full, JFFS2 garbage collection
   - noisy loads near the Supervisor (chargers, UPS, LED drivers)
 
   The panels keep producing power in all these cases; only monitoring
-  stops.
+  stops. On our box, plugging the Supervisor into an outlet very close to
+  the solar breaker, on the same breaker, brought 18 of 19 inverters back
+  at once (the breaker is neither AFCI nor GFCI).
 
 ## Some inverters report but produce nothing
 

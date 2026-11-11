@@ -123,12 +123,13 @@ def remove_stale_cache(min_age):
 
 
 def number(text):
-    m = re.search(r'-?\d+(?:\.\d+)?', text)
+    m = re.search(r'-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?', text)
     return m and float(m.group(0))
 
 
 # The labels `sbti -m` prints ("<label> = <value>", from the sbti binary),
-# mapped to (sensor key, scale). Lifetime energy comes in Wh.
+# mapped to (sensor key, scale). Lifetime energy comes in Wh, printed like
+# 4.24896e+06.
 LABELS = {
     'Total Lifetime Energy in Watt hours': ('energy', 1e-3),
     'Present AC Power Generating in Watts': ('power', 1),
@@ -136,6 +137,7 @@ LABELS = {
     'DC Current in Amps': ('dc_amps', 1),
     'DC Power in Watts': ('dc_watts', 1),
     'AC Voltage line 1 to line 2': ('ac_volts', 1),
+    'Measured Line AC Amperage in Amps': ('ac_amps', 1),
     'Line Frequency in Hertz': ('frequency', 1),
     'Temperature in celsius': ('temperature', 1),
 }
@@ -156,8 +158,6 @@ def parse(output):
         elif line.strip().startswith('Alert '):
             alerts.append(line.strip())
     if 'power' in values:
-        if 'ac_volts' in values and values['ac_volts']:
-            values['ac_amps'] = round(values['power'] / values['ac_volts'], 3)
         values['status'] = alerts and '; '.join(alerts)[:250] or 'ok'
     return values
 

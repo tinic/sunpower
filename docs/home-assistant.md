@@ -80,10 +80,9 @@ coming up, broker restart, SIGTERM, `kill -9`, and night.
 
 ## Status
 
-The parser uses the labels from the `sbti` binary
-([inverters.md](inverters.md)); it has not yet seen real output, because
-our powerline link is down. Until an inverter answers, the bridge reports
-it as unreachable.
+Working on our box: all inverters that answer on the powerline report
+power, energy, voltages, currents, frequency and temperature in Home
+Assistant ([real `sbti -m` output](inverters.md)).
 
 ## Run it by hand
 
